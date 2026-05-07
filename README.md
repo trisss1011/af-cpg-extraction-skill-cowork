@@ -19,9 +19,10 @@
 ## 버전 이력
 
 - **v2.4** — 최초 실배포 버전
-- **v2.5** — 현재 버전
+- **v2.5** — comorbidity 코드 6 추가 (高栓塞·高出血 위험)
+- **v2.5.1** — 토의목록 append 기능 + merge-skill 서식 보존 (현재 버전)
 
-각 버전은 Git 태그로 관리되며, [Releases](https://github.com/trisss1011/af-cpg-extraction-skill/releases)에서 zip으로 다운로드할 수 있습니다.
+각 버전은 Git 태그로 관리되며, [Releases](https://github.com/trisss1011/af-cpg-extraction-skill-cowork/releases)에서 zip으로 다운로드할 수 있습니다.
 
 ## 사용 방법
 
