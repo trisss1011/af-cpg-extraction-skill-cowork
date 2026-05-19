@@ -2,6 +2,90 @@
 
 ---
 
+## v2.6 (2026-05-19) — study_design 분류 개정 + analysis_set 신열 + AF/RVR 엄격화 + HRV 제외 + SAE 통합
+
+연구팀 회의(2026-05-18) 결정사항 6건을 단일 릴리스로 통합. 마이너 수정 누적이 임계 도달하여 v2.5.x 라인을 닫고 **v2.6**으로 마이너 메이저 bump.
+
+### 1) study_design (N열) 분류 기준 개정
+
+- **이전**: "随机分为"만 있으면 quasi-RCT로 분류
+- **변경**: `随机` / `随机分为` / `randomized` 표현만 있어도 **RCT**로 분류. 배정 방법의 적절성은 RoB 2.0 Domain 1에서 별도 평가.
+- **non-RCT 신규 명시**: 입원 순서·환자 번호·요일·교대 배정 등 systematic non-random allocation 명시 시 non-RCT (코크란 EPOC 정의상 quasi-RCT이나 본 CPG는 메타분석 본 분석 제외 목적으로 non-RCT 운영)
+- **quasi-RCT**: 카테고리 유지하되 실제 사용 빈도 낮을 것으로 예상
+- **무작위 표현 없음**: non-RCT 또는 관찰연구 (사실상 메타분석 제외)
+- **모호 케이스**: 6B 채팅 출력 ⑤ 불확실 항목에 의무 기재. AI 단독 확정 금지.
+
+### 2) 기본정보 신규 AU열 `analysis_set` (47열 → 48열)
+
+- **신규**: AU `analysis_set` — 메타분석 합산 기준 분석집단 코드 (`ITT` / `PP` / `NR` 3종, mITT는 ITT로 통합)
+- **위치**: 기존 AU(notes) **앞에** 삽입. 기존 notes는 AV로 한 칸 시프트.
+- **AN과의 역할 분리**:
+  - AN `rob_d2_analysis`: 원문 서술 그대로 (RoB D2 근거용)
+  - AU `analysis_set`: 메타분석 분류용 코드 (합산 단위)
+- **판정 규칙**: ITT/PP 명시 없이 "탈락자 제외 분석"만 서술된 경우 `PP`. 어느 쪽도 판별 불가 시 `NR`. 모호 시 6B ⑤ 명시.
+
+### 3) af_type_other 코드 5 (AF with RVR) 기준 엄격화
+
+- **이전**: 코드 5 = AF with RVR (구체 기준 미규정)
+- **변경**: Methods 또는 Inclusion criteria에 **"치료 전 안정시 HR ≥ 110회/분"** (`心率 ≥ 110次/分` 포함, `安静`/`静息` 표기 불요)이 **선정 조건으로 명시된 경우만** 코드 5
+- **불인정**: VR/HR을 outcome으로 측정한 케이스(치료 전 평균 HR 100~110)
+- **모호 시**: 6B ⑤ 불확실 항목 명시
+
+### 4) HRV 및 파생 지표 아웃컴 완전 제외
+
+- **이전**: 비표준 아웃컴으로 추출 가능 (importance 공란)
+- **변경**: 아웃컴 시트에 **행 자체 생성 금지**, AI열(outcomes_reported)에도 나열 금지
+- **제외 목록** (af-outcomes.md §4 신설):
+  - 시간영역: SDNN, SDANN, RMSSD, pNN50, NN50, HRV triangular index
+  - 주파수영역: VLF, LF, HF, LF/HF ratio, TP
+  - 비선형·파생: DC, AC, Poincaré SD1·SD2, DFA, sample entropy
+- **사유**: 측정 기준·시점·기기 상이로 합산 불가, 임상 유용성 낮음
+
+### 5) SAE 통합 추출 (AE total과 동일 방식)
+
+- **신규**: SAE도 AE total처럼 **1행 통합 추출**. outcome_std = `SAE`.
+- **추출 조건**: 논문이 `SAE`/`Serious Adverse Events`/`严重不良反应` 등으로 묶어 명시 보고한 경우에만. AI가 임의로 SAE 정의 적용 금지.
+- **AE + SAE 둘 다 보고된 경우**: 두 행 동시 추출.
+- **세부 사건명·건수**: notes(U열)에 텍스트 (`영구성 AF 진행 X건(E n/C n), HF 악화 …` 형식).
+- **소급 적용**: 기존 2009·2014 추출 파일은 작업자(심상송)가 일괄 재수정 예정.
+
+### 6) 분류 모호 케이스 처리 원칙 명문화
+
+- 6B 채팅 출력에 **7번 항목 신설** — study_design / af_type_other 코드 5 / analysis_set 판정 모호 시 ⑤ 불확실 항목에 의무 명시
+- 해당 3개 열의 정의문에도 "모호 시 6B ⑤ 명시" 문구 일관 추가
+
+### SKILL.md 수정 요약
+
+- frontmatter version `2.5.1` → `2.6`, updated `2026-05-19`
+- description에 v2.6 요약 6줄 추가
+- 1단계 연구 설계 분류 블록 표 형식으로 재작성
+- 2C 표 S열(af_type_other) 코드 5 기준 본문 추가
+- **2F 섹션 분리**: 2F → `analysis_set`(신규), 2G → `notes`(위치 변경)
+- 4단계 도입부에 HRV 제외 안내 1줄 추가
+- 5.3 AE 섹션 → **AE/SAE 통합** 섹션으로 확장
+- 6B 채팅 출력에 7번 항목(모호 케이스) 신설
+- 7A 시트 구성 47열 → 48열, 샘플 참조 `sample_v2.6.xlsx`
+- 참조 파일 목록 갱신
+
+### 신규/갱신 파일
+
+- `references/af-outcomes.md` — §4 제외 아웃컴 신설
+- `references/rob-extraction-fields.md` — AN/AU 역할 분리 1줄 추가
+- `sample_v2.6.xlsx` 신설 (sample_v2.5 복제 + AU `analysis_set` 신열 삽입)
+- `90_Output/AF_CPG_data_extraction_master_[작업자이름].xlsx` 48열 마이그레이션
+- `90_Output/AF_CPG_data_extraction_example(2-39).xlsx` 48열 마이그레이션
+- `00_skills/cpg-data-extraction/migrate_master_v2.6.py` 신규 — v2.5.x 47열 → v2.6 48열 마이그레이션 스크립트
+- README.md 버전 이력 갱신
+- merge-skill version `2.5.1` → `2.6` (호환성 메모 추가)
+
+### 기존 추출 파일 호환성
+
+- v2.5.x 추출 파일(47열)을 v2.6 마스터(48열)에 직접 머지 시 merge-skill 4B 헤더 검증에서 **거부**된다 (AU 위치가 다름).
+- 해결: `migrate_master_v2.6.py`를 추출 파일에도 적용해 48열로 마이그레이션 후 머지.
+- 스크립트는 openpyxl 기반, 락 파일 체크 + 자동 백업 + 멱등성 보장.
+
+---
+
 ## v2.5.1 (2026-05-07) — 토의목록 append 기능 추가 + merge-skill 서식 보존 통합
 
 병행 진행되던 두 작업 라인을 통합한 릴리스. cpg-data-extraction 본체 동작은 v2.5(코드 6) 그대로이며, 협업·머지 품질 측면에서 두 가지가 추가됨.

@@ -1,7 +1,7 @@
 ---
 name: merge-skill
-version: 2.5.1
-updated: 2026-05-07
+version: 2.6
+updated: 2026-05-19
 description: >
   심방세동 한의CPG 데이터 추출 작업에서 세션별로 분리 저장된 추출 파일들(`90_Output/extracts/AF_extract_<번호>_<study_id>.xlsx`)을 마스터 엑셀 `AF_CPG_data_extraction_심상송.xlsx`에 안전하게 병합한다.
   동시 세션 추출의 lost update(쓰기 손실) 경쟁 조건을 회피하기 위해 추출은 단독 파일로 분리하고, 병합은 단일 시점에 원자적으로 처리한다.
@@ -405,6 +405,11 @@ Overwrite 대상:
 ---
 
 ## 변경 이력
+
+### v2.6 (2026-05-19)
+- cpg-data-extraction v2.6과 버전 정렬 (스킬 동작 변경 없음, 호환성 메모 추가)
+- **호환성 주의**: cpg-data-extraction v2.6은 기본정보 시트가 47열 → 48열로 변경됨 (AU `analysis_set` 신열 + AV `notes`). v2.5.x 추출 파일을 v2.6 마스터에 직접 머지 시 4B 헤더 검증에서 거부된다. 사전에 `00_skills/cpg-data-extraction/migrate_master_v2.6.py`로 추출 파일을 48열로 마이그레이션한 뒤 머지할 것.
+- 마스터·추출 파일 모두 48열로 정렬되어 있으면 머지 알고리즘은 v2.5.1과 동일하게 동작 (insert_rows ASCENDING + 템플릿 스타일 복사).
 
 ### v2.5.1 (2026-05-07)
 - 9단계 머지 알고리즘을 `delete_rows`(데이터 영역 일괄) + 재기입 → **`insert_rows`(ASCENDING) + 템플릿 스타일 복사** 로 변경
