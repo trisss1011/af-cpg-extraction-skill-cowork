@@ -100,6 +100,14 @@ upgrade-skill 실행 시 리포트로 출력되는 항목 (자동 변경 없음,
 
 각 룰 상세는 `00_skills/upgrade-skill/references/v2.6.1_changes.md` 참조.
 
+### 이전 버전 파일 정리 (v2.6.1 릴리스 청소)
+
+본 릴리스를 끝으로 다음 이전 버전 파일들을 저장소에서 폐기. 모두 git history(v2.6 commit `1cdbf58` 이전)에 보존되어 있으므로 비상시 `git show <commit>:<path>`로 복구 가능.
+
+- `00_skills/cpg-data-extraction/migrate_master_v2.6.py` — upgrade-skill v1.2가 흡수 (v2.5.x → v2.6 47→48열 마이그레이션이 `references/v2.6_changes.md` §1 자동 처리로 통합). 작업자가 별도 스크립트 실행할 필요 없음. 잔존 시 작업자가 실수로 실행 → upgrade-skill의 `_meta` 추적과 충돌 가능 → 폐기.
+- `00_skills/cpg-data-extraction/sample_v2.4.xlsx`, `sample_v2.5.xlsx` — 이전 버전 샘플. 현재 기준은 `sample_v2.6.1.xlsx` 단일.
+- `01_매뉴얼/AF_CPG_데이터추출_매뉴얼_v2.5.1.docx`, `v2.6.docx` — 이전 버전 매뉴얼. v2.6.1.docx에 트래킹 변경으로 변경 이력이 보존되어 있으므로 별도 보관 불요.
+
 ---
 
 ## v2.6 (2026-05-19) — study_design 분류 개정 + analysis_set 신열 + AF/RVR 엄격화 + HRV 제외 + SAE 통합
