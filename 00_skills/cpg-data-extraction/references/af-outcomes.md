@@ -40,6 +40,7 @@
 | 표준명 (국문) | 표준명 (영문) | 자료 유형 | 중요도 | 척도 설명 |
 |-------------|-------------|---------|--------|---------|
 | AFEQT 점수 | Atrial Fibrillation Effect on QualiTy of life | 연속형 (0~100) | Important | 높을수록 양호. 총점 및 하위 도메인(증상/일상활동/치료 관심도) 각각 추출 |
+| 미네소타 인용 QOL | QOL(Minnesota cited) | 연속형 | Important | **v2.6.1 신설** — 일부 논문(No.619, No.635 등)에서 미네소타 척도를 인용하나 점수 방향이 표준 MLHFQ와 모순되거나 변화량/최종값 형태가 일치하지 않는 케이스를 위한 별도 코드. 표준 MLHFQ와 합산하지 않음. 척도 정식명칭 NR·점수 방향·변화량 여부는 notes 기재. |
 
 ### 1.5 운동능력
 
@@ -97,6 +98,7 @@
 | 총유효율 (TER) | `TER` | Important |
 | EHRA 점수 | `EHRA` | Important |
 | AFEQT 점수 | `AFEQT` | Important |
+| 미네소타 인용 QOL | `QOL(Minnesota cited)` | Important |
 | 6분 보행검사 | `6MWT` | Important |
 | 이상반응 전체 | `AE total` | Important |
 | 중대한 이상반응 | `SAE` | Important |

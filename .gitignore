@@ -24,3 +24,16 @@ AF_CPG_data_extraction_2*.xlsx
 세션_작업일지_*.md
 작업노트_*.md
 수정_추적_리스트.md
+
+# v2.6.1: tooling/IDE
+.claude/
+.omc/
+
+# v2.6.1: local output artifacts (작업자 로컬 산출물)
+90_Output/backups/
+90_Output/extracts/
+
+# v2.6.1: temporary dump files
+.sample_dump.txt
+.manual_outline.txt
+.manual_unpacked/

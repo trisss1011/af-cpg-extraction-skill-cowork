@@ -2,6 +2,106 @@
 
 ---
 
+## v2.6.1 (2026-05-20) — upgrade-skill + `_meta` 인프라 + 추출 규칙 보강
+
+본 릴리스는 두 가지 트랙을 통합한다:
+1. **인프라 트랙** — `upgrade-skill` 신설 + `_meta` 시트 도입 (셀프 마이그레이션)
+2. **규칙 보강 트랙** — 연구팀 회의(2026-05-19·05-20) 결정 사항을 SKILL.md에 명문화
+
+cpg-data-extraction의 **열 구조는 v2.6 그대로**(48열). 의미·기재 규칙·논문 선정 기준의 보강이 핵심이다.
+
+### 신규: `upgrade-skill` (v1.2)
+
+- 단일 트리거(`"업그레이드 해줘"`)로 마스터의 현재 버전을 자동 감지하고 최신 사양까지의 모든 변경(구조 + 소급 적용)을 순차로 적용.
+- 자동 처리 항목은 미리보기 → "예" 일괄 적용. 사람 확인 항목은 **8단계 인터랙티브 처치**로 분리 — 카테고리별 채팅 출력 → 작업자 응답대로 마스터 즉시 수정.
+- cowork·CLI 어느 환경에서든 동일하게 동작.
+- 버전별 변경 명세는 `references/v<버전>_changes.md`로 분리 관리.
+- **v1.2 (본 릴리스)**: (1) v2.6.1 변경 명세 지원 추가 (`references/v2.6.1_changes.md`). LATEST_VERSION `2.6` → `2.6.1`. (2) **8단계 인터랙티브 처치 모드 도입** — 사람 확인 항목을 추출 6B 채팅 출력과 동일한 방식으로 카테고리별 표시, 작업자 응답("전부 적용"/"개별 선택"/"건너뛰기"/"마침")에 따라 즉시 처치. `.md` 리포트도 병행 저장해 세션 끊겨도 재개 가능. (3) **`_meta` 키 명명 변경** — `schema_version` → `spec_version`. "스키마(열 구조)"가 아니라 "적용된 cpg-data-extraction 사양"을 추적한다는 의미 명확화. 기존 `schema_version` 키는 자동 마이그레이션(값 복사 후 구 키 삭제). 하위 호환 1단계 유지.
+
+### 신규: `_meta` 시트
+
+- 마스터 엑셀에 숨김 시트 `_meta` 추가 (key/value 구조)
+- 기록 키: `spec_version`, `created_at`, `last_upgrade`, `last_actor`
+- 작업자가 직접 편집하지 않음 — upgrade-skill만 read/write
+- 빈 마스터 템플릿·sample·example 모두 `_meta` 포함 (초기값 `spec_version=2.6.1`)
+- 기존 마스터(2.5.x·2.6)에는 upgrade-skill 첫 실행 시 헤더 구성으로 추정해 자동 생성. v2.6 vs v2.6.1은 열 구조로 구분되지 않으므로 보수적으로 `2.6`으로 잡고 v2.6.1 명세를 한 번 통과.
+
+### 추출 규칙 보강 (2026-05-19·05-20 회의 결정)
+
+1) **논문 포함·제외 기준 명문화**
+   - 본 메타분석의 임상적 전제: "한국 임상현실에서 심방세동 환자에게 표준치료(WM)를 안 할 수 없다" → 표준치료 add-on 연구만 대상.
+   - `KM vs WM` 단독비교(한방이 표준치료를 대체) → **제외**.
+   - 3arm 연구는 본 메타분석에 해당하는 2arm 비교쌍만 추출, 나머지 한 군은 버림.
+   - KM·WM·KM+WM 3군 구성은 `WM vs KM+WM`만 추출, `KM vs WM` 비교는 추출하지 않음.
+
+2) **S열 `af_type_other` 코드 5 케이스 세분화**
+   - **인정**: (RVR 명시 ∧ HR≥110) ∨ (RVR 미언급 ∧ HR≥110 명시)
+   - **불인정**: RVR이라는 단어만 있고 HR 110 미달 또는 횟수 미언급 → 코드 5 부여 금지, **T열에 원문 표현만 기록**.
+   - HR 기준선은 110회 이상으로 통일 (v2.6과 동일).
+
+3) **T열 `af_type_text` 자유 텍스트 규칙 신설**
+   - paroxysmal/persistent/permanent/RVR/non-valvular AF 등 AF 유형 관련 원문 표현을 자유 텍스트로 보존.
+   - S열 코드 체계로 휘발되는 정보를 그대로 남기는 용도.
+   - S열 코드 5 불가 케이스(RVR 단어만 있고 HR 미충족)도 여기에 기록.
+
+4) **AN/AU 분석집단 보수적 판정 + FAS 정식 코드**
+   - **보수적 판정**: ITT/PP/mITT/FAS는 method에 **명시된 것만 인정**. 결과 표의 분모만 보고 PP/ITT 추정 금지.
+   - 명시 없음 → 일괄 `NR`.
+   - **FAS 정식 코드 추가** — AU `analysis_set`이 `ITT/PP/NR` 3종에서 **`ITT/PP/FAS/NR` 4종**으로 확장. mITT는 ITT로 통합 유지.
+   - 사유 (ICH E9): 실제 RCT의 "ITT" 보고는 엄밀히 FAS인 경우가 많고, 명시 없이 추정하면 결과 왜곡 위험.
+
+5) **QoL 미네소타 통일 명칭 = `QOL(Minnesota cited)`**
+   - 일부 논문(No.619, No.635 등)의 미네소타 척도가 표준 MLHFQ와 점수 방향이 모순되거나 변화량/최종값 형태가 불일치 → 표준 MLHFQ로 보지 않고 별도 코드 `QOL(Minnesota cited)` 사용.
+   - 척도 정식명칭 NR·점수 방향·변화량 여부는 notes(U열)에 기록.
+   - af-outcomes.md §1.4·§3.1에 정식 등재.
+
+6) **6B 모호 케이스 체크리스트 확장**
+   - 기존 3개 항목(study_design / af_type_other 코드 5 / analysis_set)에 다음 추가:
+     - T열 af_type_text 해석 모호
+     - Z열 comparison_type — KM vs WM / 3arm 비교쌍 선택 모호
+     - AN/AU — method 명시 없이 결과 표 분모로만 추정해야 하는 경우 (추정 금지, `NR` 처리)
+
+### 작업자 운영 모델 변경
+
+- **이전 (v2.6 마이그레이션 모델)**: 작업자가 마스터를 심상송에게 제출 → 심상송이 마이그레이션 후 회신
+- **변경 (v2.6.1)**: 작업자가 v2.6.1 zip 받고 `"업그레이드 해줘"` 한 마디로 본인 마스터 셀프 처리
+- 심상송 병목 제거, 다운타임 0
+
+### 신규/갱신 파일
+
+- `00_skills/cpg-data-extraction/SKILL.md` — frontmatter version `2.6` → `2.6.1`, description 6개 항목 추가, 1단계 논문 포함·제외 박스 신설, 2C S열·T열 규칙 갱신, 2D Z열 표 갱신·3arm 박스, 2E AN열 FAS, 2F AU열 ITT/PP/FAS/NR 4종 + 보수적 판정 전면 재작성, 4단계 미네소타 명칭, 6B ⑤ 모호 케이스 5항목 확장, 7A 시트 구성 표기 갱신
+- `00_skills/cpg-data-extraction/references/rob-extraction-fields.md` — AN열 FAS 코드 추가 + 보수적 판정 + FAS 인정 사유
+- `00_skills/cpg-data-extraction/references/af-outcomes.md` — §1.4·§3.1에 `QOL(Minnesota cited)` 등재
+- `00_skills/cpg-data-extraction/sample_v2.6.xlsx` → `sample_v2.6.1.xlsx` 리네임 (열 구조 동일)
+- `00_skills/upgrade-skill/SKILL.md` — v1.1 → v1.2, LATEST_VERSION `2.6` → `2.6.1`, v2.6.1 처리 흐름 추가
+- `00_skills/upgrade-skill/references/v2.6.1_changes.md` 신설 (자동 처리·사람 확인 룰 상세)
+- `00_skills/upgrade-skill/references/v2.6_changes.md` (기존 유지)
+- `MIGRATION_NOTICE_v2.6.1.md` 갱신 (셀프 처리 안내 + 본 차수 변경 반영)
+- README.md 버전 이력 갱신
+
+### 호환성
+
+- **열 구조 변경 없음** — v2.6 마스터(48열)는 그대로 v2.6.1 마스터로 사용 가능. 추출 파일(48열)도 그대로 머지 가능.
+- 기존 v2.6 마스터: upgrade-skill 실행 시 `_meta` 키 마이그레이션(`schema_version` → `spec_version`) + `spec_version` 값 `2.6.1` 갱신만 자동. 그 외 모든 v2.6.1 사람 확인 항목은 8단계 인터랙티브로 작업자 응답을 받아 처치 (미네소타 QoL 변환 포함).
+- 기존 v2.5.x 마스터: upgrade-skill이 47→48열 마이그레이션 + v2.6 소급 + v2.6.1 보강을 한 번에 순차 적용.
+- cpg-data-extraction·merge-skill 본체 알고리즘은 변경 없음 (`_meta` 시트는 무시되어도 영향 없음).
+
+### 사람 확인 항목 (소급 적용 — 본 차수)
+
+upgrade-skill 실행 시 리포트로 출력되는 항목 (자동 변경 없음, 작업자 원문 대조 필요):
+
+- A. AU `analysis_set` 추정값 검출 — 보수적 판정 위반 후보 (탈락자 제외 서술로 PP 추정된 행 등)
+- B. FAS 명시 논문 재분류 후보 — `ITT` → `FAS` 승격
+- C. KM vs WM 단독비교 행 제거 후보 (`Z=KM_alone_vs_WM`)
+- D. S열 코드 5 케이스 세분화 재검토 (RVR 단어만 있고 HR 110 미충족 후보)
+- E. T열 `af_type_text` 누락 후보
+- F. 미네소타 QOL 변환 후보 — `MLHFQ` 행 중 **점수 방향이 표준 MLHFQ(낮을수록 양호)와 모순**되는 케이스 자동 검출 (룰 R1 원시데이터, R2 효과크기 부호, R3 변화량). 알려진 사례(No.619·635 등)는 자동 검출에 자연히 포함됨. 다른 지표는 본 룰 대상 아님.
+- G. 3arm 비교쌍 점검 (같은 study_id에 비교쌍 2개 이상)
+
+각 룰 상세는 `00_skills/upgrade-skill/references/v2.6.1_changes.md` 참조.
+
+---
+
 ## v2.6 (2026-05-19) — study_design 분류 개정 + analysis_set 신열 + AF/RVR 엄격화 + HRV 제외 + SAE 통합
 
 연구팀 회의(2026-05-18) 결정사항 6건을 단일 릴리스로 통합. 마이너 수정 누적이 임계 도달하여 v2.5.x 라인을 닫고 **v2.6**으로 마이너 메이저 bump.
