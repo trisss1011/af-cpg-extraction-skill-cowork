@@ -1,6 +1,7 @@
 # 심방세동(Atrial Fibrillation) CPG 표준 아웃컴 목록
 
-> 최종 확정: 2026-03-26 연구팀 합의
+> 최종 확정: 2026-03-26 연구팀 합의 · 최근 갱신: 2026-06-01 (v2.8)
+> 갱신 이력: v2.6 HRV 제외 신설 / v2.6.1 QOL(Minnesota cited) / v2.8 QOL(SF-36 cited) 추가
 > GRADE 방법론에 따라 Critical / Important로 중요도 분류
 
 ---
@@ -41,6 +42,7 @@
 |-------------|-------------|---------|--------|---------|
 | AFEQT 점수 | Atrial Fibrillation Effect on QualiTy of life | 연속형 (0~100) | Important | 높을수록 양호. 총점 및 하위 도메인(증상/일상활동/치료 관심도) 각각 추출 |
 | 미네소타 인용 QOL | QOL(Minnesota cited) | 연속형 | Important | **v2.6.1 신설** — 일부 논문(No.619, No.635 등)에서 미네소타 척도를 인용하나 점수 방향이 표준 MLHFQ와 모순되거나 변화량/최종값 형태가 일치하지 않는 케이스를 위한 별도 코드. 표준 MLHFQ와 합산하지 않음. 척도 정식명칭 NR·점수 방향·변화량 여부는 notes 기재. |
+| SF-36 인용 QOL | QOL(SF-36 cited) | 연속형 | Important | **v2.8 신설** — SF-36을 인용하나 점수체계가 표준과 다른 케이스(통상 PCS·MCS 각 100점 환산이나 800점 만점 등 비표준 표기). **표준(100점 환산)만 메타분석 MD**, 점수체계가 다른 비표준은 **별도 분리 후 SMD**. 점수체계·총점 만점은 notes 기재. 총점 100 초과 등 표준과 다르면 6B ⑤ 표시. (미네소타 선례와 평행) |
 
 ### 1.5 운동능력
 
@@ -78,7 +80,7 @@
 
 ---
 
-## 3. 아웃컴 시트 C열 (outcome_std) 매핑표 (v1.13)
+## 3. 아웃컴 시트 C열 (outcome_std) 매핑표
 
 추출 엑셀 아웃컴 시트 C열에는 아래 **코드**를 기재한다. 약어 우선, 없으면 짧은 영문명.
 
@@ -99,6 +101,7 @@
 | EHRA 점수 | `EHRA` | Important |
 | AFEQT 점수 | `AFEQT` | Important |
 | 미네소타 인용 QOL | `QOL(Minnesota cited)` | Important |
+| SF-36 인용 QOL | `QOL(SF-36 cited)` | Important |
 | 6분 보행검사 | `6MWT` | Important |
 | 이상반응 전체 | `AE total` | Important |
 | 중대한 이상반응 | `SAE` | Important |
