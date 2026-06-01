@@ -1,13 +1,14 @@
 ---
 name: upgrade-skill
-version: 1.2
-updated: 2026-05-20
+version: 1.3
+updated: 2026-06-01
 description: >
   심방세동 한의CPG 데이터 추출 마스터 엑셀을 최신 cpg-data-extraction 사양으로 안전하게 업그레이드한다.
   마스터의 `_meta` 시트에서 현재 spec_version을 식별하고, 그 버전부터 최신 버전까지의 모든 변경(구조 마이그레이션·소급 적용)을 순차로 적용한다.
   각 버전 변경 명세는 `references/v<버전>_changes.md`로 분리 관리. 자동 처리(구조·키워드 매핑)는 사용자 승인 후 즉시 반영, 사람 확인 필요 항목(분류 모호·원문 대조 필요)은 리포트에만 출력.
   cowork·CLI 어느 환경에서든 동일하게 동작 (openpyxl 기반, 외부 의존성 없음).
   v1.2 (2026-05-20): (1) v2.6.1 변경 명세 지원 추가 — KM vs WM 단독비교 제외 후보, S열 코드 5 케이스 세분화 재검토, T열 af_type_text 보강 후보, AN/AU FAS 정식 코드 + 보수적 판정, QOL(Minnesota cited) 명칭 갱신 후보. v2.6.1은 열 구조 변경 없음(48열 그대로), 의미·기재 규칙 보강만. (2) **8단계 인터랙티브 처치 모드** — 사람 확인 항목을 채팅창에서 카테고리별로 표시, 작업자 응답에 따라 마스터를 즉시 수정. 기존 `.md` 리포트는 병행 저장. 추출 6B 채팅 출력과 동일한 UX. (3) `_meta` 시트 키 명명 변경 — `schema_version` → `spec_version` ("열 구조"가 아니라 "적용된 사양"을 추적한다는 의미 명확화). 기존 마스터의 `schema_version` 키는 자동 마이그레이션 (값 복사 후 구 키 삭제).
+  v1.3 (2026-06-01): v2.7·v2.8 변경 명세 지원 추가 (`references/v2.7_changes.md`, `references/v2.8_changes.md`). `LATEST_VERSION` 2.6.1 → 2.8 (v2.7 따라잡기 + v2.8 동시 반영). v2.8 자동도 `spec_version` 갱신뿐 — 양약 용량/종류차 제외(§1.AD-01, 2032 등)·무작위+순서배정 동시 시 non-RCT 재분류·다군 1쌍 재점검은 원문 대조가 필요해 8단계 사람 확인. v2.7은 열 구조 변경 없음(48열 유지) — 값·규칙 보강 + 소급 재분류. 자동 처리는 2건(`spec_version` 갱신 + `KM+WM_vs_KM` exclude 마킹)으로 한정(보수적 방침); 나머지(comorbidity 코드 2 제거·코드 7 노인[보류]·setting NR·Median/IQR·2처방 합침·개별화 처방·RFCA 재코딩)는 원문 대조가 필요해 8단계 인터랙티브 사람 확인. 마스터 셀만으로 100% 결정 가능한 항목만 자동 변경한다는 안전철학 유지.
   트리거: 업그레이드, 업그레이드 해줘, 마스터 업그레이드, upgrade, upgrade 실행, 마스터 retrofit, retrofit 실행, 소급 적용, 최신 버전으로 업그레이드, v2.6 업그레이드, v2.6.1 업그레이드, v2.7 업그레이드.
 ---
 
@@ -83,6 +84,8 @@ cpg-data-extraction의 신 버전이 나올 때마다 기존 마스터 엑셀을
   - 기본정보 47열, 끝이 `notes` → `2.5` (정확히는 2.5.x — 첫 업그레이드에서 2.6 → 2.6.1로 순차 진입)
   - 기본정보 48열, AU=`analysis_set`, AV=`notes` → `2.6` (다음 업그레이드에서 2.6.1로 진입)
   - v2.6.1은 열 구조 변경이 없으므로 헤더만으로는 2.6 vs 2.6.1 구분 불가. `_meta`가 없으면 보수적으로 `2.6`으로 잡고, upgrade-skill 실행 시 2.6 → 2.6.1 변경(주로 사람 확인 항목)을 한 번 더 통과시킨다 (멱등성).
+  - v2.7도 열 구조 변경이 없어(48열 유지) 헤더만으로는 2.6.1 vs 2.7 구분 불가. `spec_version`으로만 판별한다. `_meta`가 없어 `2.6`으로 추정된 마스터는 2.6 → 2.6.1 → 2.7을 순차 통과(전부 멱등).
+  - v2.8도 열 구조 변경 없음(48열 유지). `spec_version`으로만 판별. 추정 마스터는 2.6 → 2.6.1 → 2.7 → 2.8 순차 통과(전부 멱등).
   - 추후 버전은 동일 패턴으로 추정 규칙 추가
 
 ---
@@ -109,10 +112,10 @@ cpg-data-extraction의 신 버전이 나올 때마다 기존 마스터 엑셀을
 
 ## 5단계: 적용할 변경 목록 산출
 
-본 스킬이 지원하는 최신 버전을 `LATEST_VERSION` 상수로 보유 (현재 `2.6.1`).
+본 스킬이 지원하는 최신 버전을 `LATEST_VERSION` 상수로 보유 (현재 `2.8`).
 
 - `current_version >= LATEST_VERSION`: 변경 없음 → 미리보기에 "이미 최신" 표시 후 정상 종료
-- `current_version < LATEST_VERSION`: 적용할 버전 목록을 순서대로 산출 (예: current=`2.5` & latest=`2.6.1` → `[2.6, 2.6.1]`)
+- `current_version < LATEST_VERSION`: 적용할 버전 목록을 순서대로 산출 (예: current=`2.5` & latest=`2.8` → `[2.6, 2.6.1, 2.7, 2.8]`)
 
 각 버전 변경 명세는 `references/v<버전>_changes.md`에서 읽어 처리.
 
@@ -129,8 +132,15 @@ cpg-data-extraction의 신 버전이 나올 때마다 기존 마스터 엑셀을
    - 자동: `_meta` 키 마이그레이션(`schema_version` → `spec_version`), `spec_version` 갱신(2.6.1)
    - 사람 확인 (8단계 인터랙티브): KM vs WM 단독비교 행 제거 후보, S열 코드 5 케이스 세분화 재검토, T열 자유 텍스트 누락 후보, AN/AU 보수적 판정 재분류(추정 PP/ITT → NR 후보), FAS 명시 논문의 코드 재분류, **미네소타 QOL 점수 방향 모순 검출**(MLHFQ → QOL(Minnesota cited))
    - 열 구조 변경 없음 (48열 유지)
-3. v2.7 변경 (있으면 같은 패턴)
-4. ...
+3. v2.7 변경 (`references/v2.7_changes.md`):
+   - 자동: `spec_version` 갱신(2.7), **`KM+WM_vs_KM` exclude 마킹**(Z열 정확 매치 → exclude=Y + 사유, 행 삭제 아님 — 3arm 다른 비교쌍 보존)
+   - 사람 확인 (8단계 인터랙티브): comorbidity 코드 2(심부전) 제거 후보, comorbidity 코드 7(노인) 부여 후보(보류·표시만), setting 추정값→NR 후보, Median/IQR 후보(셀 NR+V열 IQR+notes), 한약 2처방 동시투여 합침 후보, 개별화 처방(변증 분기) 후보, RFCA 후 무처치 대조 재코딩 후보
+   - 열 구조 변경 없음 (48열 유지)
+4. v2.8 변경 (`references/v2.8_changes.md`):
+   - 자동: `spec_version` 갱신(2.8)
+   - 사람 확인 (8단계 인터랙티브): 양약 용량·종류 상이 제외 후보(`KM+WM_vs_WM`, AC/AD 원문 대조 — 2032 등), 무작위+순서배정 동시 → non-RCT 재분류 후보(AJ/AK 원문), 다군 1쌍 재점검 후보(같은 study_id 비교쌍 ≥2)
+   - 열 구조 변경 없음 (48열 유지)
+5. v2.9 이후 (있으면 같은 패턴)
 
 자동 처리 미리보기를 채팅에 출력:
 
@@ -192,6 +202,18 @@ cpg-data-extraction의 신 버전이 나올 때마다 기존 마스터 엑셀을
   J. T열 af_type_text 누락:          N건
   K. 미네소타 QOL 변환 후보:          N건
   L. 3arm 비교쌍 점검:                N건
+[v2.7]
+  M. comorbidity 코드 2(심부전) 제거:  N건
+  N. comorbidity 코드 7(노인) 부여(보류·표시만): N건
+  O. setting 추정값 → NR:             N건
+  P. Median/IQR (셀 NR+V열 IQR):       N건
+  Q. 한약 2처방 동시투여 합침:          N건
+  R. 개별화 처방(변증 분기):            N건
+  S. RFCA 후 무처치 대조 재코딩:        N건
+[v2.8]
+  T. 양약 용량·종류 상이 제외:          N건
+  U. 무작위+순서배정 → non-RCT 재분류:   N건
+  V. 다군 1쌍 재점검:                   N건
 
 총 N건.
 어디부터 처리할까요?
@@ -275,15 +297,15 @@ cpg-data-extraction의 신 버전이 나올 때마다 기존 마스터 엑셀을
 
 ---
 
-## 새 버전(v2.7 등) 추가 방법
+## 새 버전(v2.9 등) 추가 방법
 
 다음 회의에서 변경사항이 정해지면:
 
-1. `references/v2.7_changes.md` 작성 (자동 처리·사람 확인 항목 분류, 키워드·룰 명세)
-2. 본 스킬 구현 코드(또는 cowork 실행 로직)에 v2.7 처리 함수 추가
-3. `LATEST_VERSION` 상수를 `2.7`로 갱신
+1. `references/v2.9_changes.md` 작성 (자동 처리·사람 확인 항목 분류, 키워드·룰 명세)
+2. 본 스킬 구현 코드(또는 cowork 실행 로직)에 v2.9 처리 함수 추가
+3. `LATEST_VERSION` 상수를 `2.9`로 갱신
 4. SKILL.md frontmatter `version`·`updated` 갱신, 본 흐름 섹션에 한 줄 추가
-5. 작업자 공지: 트리거는 동일("업그레이드 해줘"), 자동으로 v2.6 → v2.7 적용됨
+5. 작업자 공지: 트리거는 동일("업그레이드 해줘"), 자동으로 v2.7 → v2.9 적용됨
 
 작업자 입장에서는 트리거 한 마디만 알면 됨.
 
@@ -338,5 +360,7 @@ cowork에서는 작업자가 트리거를 입력하면 Claude가 SKILL.md를 읽
 
 - `references/v2.6_changes.md` — v2.6 변경 명세 (자동 처리·사람 확인 룰 상세)
 - `references/v2.6.1_changes.md` — v2.6.1 변경 명세 (의미·기재 규칙 보강 — 거의 사람 확인 항목)
-- (이후 버전 추가 시 `references/v2.7_changes.md` 등 같은 패턴으로 신설)
+- `references/v2.7_changes.md` — v2.7 변경 명세 (자동 2건: spec_version·KM+WM_vs_KM 마킹 / 나머지 8단계 사람 확인)
+- `references/v2.8_changes.md` — v2.8 변경 명세 (자동 1건: spec_version / 양약 용량·종류차 제외·무작위+순서배정 재분류·다군 1쌍은 8단계 사람 확인)
+- (이후 버전 추가 시 `references/v2.9_changes.md` 등 같은 패턴으로 신설)
 - `references/_meta_sheet.md` — `_meta` 시트 키 목록 및 기록 규칙 (선택, 키가 늘어나면 신설)
