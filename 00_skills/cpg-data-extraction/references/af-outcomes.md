@@ -1,7 +1,7 @@
 # 심방세동(Atrial Fibrillation) CPG 표준 아웃컴 목록
 
-> 최종 확정: 2026-03-26 연구팀 합의 · 최근 갱신: 2026-06-01 (v2.8)
-> 갱신 이력: v2.6 HRV 제외 신설 / v2.6.1 QOL(Minnesota cited) / v2.8 QOL(SF-36 cited) 추가
+> 최종 확정: 2026-03-26 연구팀 합의 · 최근 갱신: 2026-06-08 (v2.9)
+> 갱신 이력: v2.6 HRV 제외 신설 / v2.6.1 QOL(Minnesota cited) / v2.8 QOL(SF-36 cited) 추가 / v2.9 TER 4종(판정기준별) 통일·전부 Important
 > GRADE 방법론에 따라 Critical / Important로 중요도 분류
 
 ---
@@ -33,7 +33,7 @@
 
 | 표준명 (국문) | 표준명 (영문) | 자료 유형 | 중요도 | 척도 설명 |
 |-------------|-------------|---------|--------|---------|
-| 총유효율 (TER) | Total effective rate (TER) | 이분형 (%) | Important | 중국 TCM RCT에서 주로 사용. 순서형(현효·유효·무효) 보고 시 (현효+유효)=Event, 전체=Total로 이분형 변환 후 추출. 변환 시 비고란에 명시 |
+| 총유효율 (TER) | Total effective rate (TER) | 이분형 (%) | Important | 중국 TCM RCT에서 주로 사용. 순서형(현효·유효·무효) 보고 시 (현효+유효)=Event, 전체=Total로 이분형 변환 후 추출(변환 시 비고 명시). **판정 기준에 따라 4종 코드로 분류 — §3.1 참조**(`TER`/`TER-Holter`/`TER-ECG`/`TER-TCM`, 전부 Important). 한 논문에 TER 2건 이상이면 각각 해당 코드로 추출하되 메타분석 합산 시 한 연구 중복 투입은 방지. |
 | EHRA 점수 | EHRA symptom score | 연속형(평균) **및** 순서형(등급) 모두 추출 | Important | 1~4등급: 1=무증상, 2=경증, 3=중증, 4=중증장애. 높을수록 불량. 보고 형태(평균 또는 등급별 인원수)를 비고란에 기록 |
 
 ### 1.4 삶의 질
@@ -76,7 +76,10 @@
 | LVEF, 射血分数, ejection fraction | 좌심실박출률 (LVEF) |
 | LAD, 左房内径, left atrial dimension, left atrial diameter | 좌심방 직경 (LAD) |
 | adverse event, 不良反应, side effect, 副作用 | 이상반응 |
-| 总有效率, 有效率, total effective rate, effective rate, response rate | 총유효율 (TER) |
+| 总有效率, 有效率, total effective rate, effective rate, response rate (판정기준 불명) | 총유효율 → `TER` |
+| 中医证候疗效, 中医证候总有效率, TCM syndrome efficacy | 총유효율 → `TER-TCM` |
+| 动态心电图疗效, Holter 总有效率 | 총유효율 → `TER-Holter` |
+| 心电图疗效, 体表心电图疗效, ECG efficacy | 총유효율 → `TER-ECG` |
 
 ---
 
@@ -97,7 +100,10 @@
 | AF 재발률 | `AF recurrence` | Important |
 | 좌심실박출률 | `LVEF` | Important |
 | 좌심방 직경 | `LAD` | Important |
-| 총유효율 (TER) | `TER` | Important |
+| 총유효율 — 판정기준 불명 | `TER` | Important |
+| 총유효율 — Holter(动态心电图) 기준 | `TER-Holter` | Important |
+| 총유효율 — 체표 심전도(心电图) 기준 | `TER-ECG` | Important |
+| 총유효율 — 中医证候 기준 | `TER-TCM` | Important |
 | EHRA 점수 | `EHRA` | Important |
 | AFEQT 점수 | `AFEQT` | Important |
 | 미네소타 인용 QOL | `QOL(Minnesota cited)` | Important |
@@ -106,6 +112,8 @@
 | 이상반응 전체 | `AE total` | Important |
 | 중대한 이상반응 | `SAE` | Important |
 | 치료 중단율 | `Discontinuation` | Important |
+
+> **TER 4종 운영 규칙**: 판정 기준에 따라 `TER`(기준 불명)·`TER-Holter`(动态心电图)·`TER-ECG`(체표 心电图)·`TER-TCM`(中医证候)로 분류하고 **전부 importance=Important**. 기준이 불명확하면 단순 `TER`. 한 논문에 TER이 2건 이상이면 각각 해당 코드로 추출하고 원문 용어는 D열(outcome_original)에 보존하되, **메타분석 합산 시 한 연구가 TER에 중복 투입되지 않도록** 분석 단계에서 1건만 사용한다. (구 표기 `TCM syndrome TER`→`TER-TCM`, 心电图 계열 Critical/공란→`TER-ECG`+Important 등은 소급 재코딩 대상)
 
 ### 3.2 비표준 아웃컴 규칙
 

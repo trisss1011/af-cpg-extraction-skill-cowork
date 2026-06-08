@@ -2,6 +2,31 @@
 
 ---
 
+## v2.9 (2026-06-08) — 2026-06-08 회의 결정 반영 (TER 4종 통일·냉동소작 코드) + SKILL 문서 경량화
+
+**열 구조 변경 없음**(48열 유지). 값·명명 규칙 보강 + 문서 경량화. 출처: Decision Log §2.C-10(§99-Y)·§1.U-03(§99-Z).
+
+### 변경 (회의 결정)
+
+1. **TER(총유효율) 4종 통일** (§2.C-10 / §99-Y): outcome_std를 `TER`(판정기준 불명)·`TER-Holter`(动态心电图)·`TER-ECG`(체표 心电图)·`TER-TCM`(中医证候) 4종으로 정리하고 **전부 importance=Important**. 기준 불명확 시 단순 `TER`. 한 논문에 TER이 2건 이상이면 각각 해당 코드로 추출(원문은 D열 보존)하되 메타분석 합산 시 한 연구 중복 투입 방지. 기존 혼재 표기(`TCM syndrome TER`·心电图 계열 Critical/공란 등)는 소급 재코딩 대상. → `references/af-outcomes.md` §1.3·§2·§3.1 + SKILL 4단계.
+2. **comorbidity_code 8(냉동소작/cryoablation) 신설** (§1.U-03 / §99-Z): 冷冻球囊导管消融 등 RF가 아닌 카테터소작은 RFCA(코드 1)와 별개 코드 8로 부여, 시술명 원문은 V열 보존. → SKILL §2C U열.
+
+### 문서 경량화 (규칙 불변, 분량만 — 독립 verifier로 규칙 보존 확인)
+
+- frontmatter description의 임베디드 버전 changelog 제거(→ 본 CHANGELOG 참조), 본문 인라인 버전태그 31곳 제거(설명문 보존), 한약 §3A 상세규칙을 `references/korean-medicine-intervention.md`로 단일화(한자 우선·G열 규칙 backfill), lost-update 중복 섹션 통합, v2.2 폐지열 메모 삭제. SKILL.md 622→592줄.
+
+### 동반
+
+- **upgrade-skill v1.4**: `references/v2.9_changes.md` 신설(TER 4종 재코딩·importance 일괄 Important·냉동소작 코드 8 검출), `LATEST_VERSION` → 2.9.
+
+### 미반영 (회의 결정이나 스킬 미반영 — 작업자 수동 적용)
+
+- §99-AA(베이스라인 누락→최종값만)·AB(치료기간 미명시 NR)·AC(측정시점 해석)·AD(추적 중 MACE 이분형)·AE(무작위+후향적→non-RCT): 2026-06-08 작업자 결정으로 스킬 미반영. 규칙은 Decision Log·`논문 선정배제 기준.md`에 존재하며 작업자가 추출 시 수동 적용.
+- **sample**: 구조 변경 없어 `sample_v2.8.xlsx` 유지(v2.8.1 선례).
+- **MIGRATION_NOTICE**: 열 구조 변경 없어 생략.
+
+---
+
 ## v2.8.1 (2026-06-04) — 버그 수정: 6C 채팅 출력 RoB 블록 누락 교정
 
 **회의 결정 무관 — 내부 정합성 버그 수정.** 열 구조·코드값·추출 규칙 변경 없음(48열 유지). Decision Log §99 행 없음(발견된 버그).
