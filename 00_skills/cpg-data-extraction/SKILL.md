@@ -541,7 +541,7 @@ PDF 추출 → 채팅창 출력 → 연구자 확인/수정 → 엑셀 저장
   - 결합 예시: `AF_extract_30_Li_2025.xlsx`
 - **저장 위치**: `90_Output/extracts/` (폴더 없으면 자동 생성)
 - **시트 구성**: 기본정보(48열) + 아웃컴(22열) + **한의중재_한약**(8열) — 3개 시트, `번호`로 연결.
-- **샘플 참조**: `sample_v2.8.xlsx`의 구조·서식을 동일하게 복제 (시트명·헤더·열 너비·서식·freeze panes 전부 일치)
+- **샘플 참조**: `sample_v2.9.1.xlsx`의 구조·서식을 동일하게 복제 (시트명·헤더·열 너비·서식·freeze panes 전부 일치)
 - **마스터 파일 직접 수정 금지**: 추출 스킬은 `AF_CPG_data_extraction_심상송.xlsx`를 읽기 전용으로만 참조한다 (서식 복제 목적). 쓰기는 절대 금지.
 
 ### 7B. 저장 시점 주의사항
@@ -590,4 +590,4 @@ PDF 추출 → 채팅창 출력 → 연구자 확인/수정 → 엑셀 저장
 - `references/korean-medicine-intervention.md` — 한약 중재 추출 상세 기준 (한의중재_한약 시트 열 정의·composition 기재 규칙 포함)
 - `references/rob-extraction-fields.md` — RoB 2.0 근거 11열(AJ~AT) 도메인별 기재 상세 기준
 - `references/af-outcomes.md` — 심방세동 CPG 표준 아웃컴 목록 + C열 매핑표
-- `sample_v2.8.xlsx` — 엑셀 출력 형식 샘플. 열 구조·서식의 기준 파일 (기본정보 48열: analysis_set + notes 포함).
+- `sample_v2.9.1.xlsx` — 엑셀 출력 형식 샘플. 열 구조·서식의 기준 파일 (기본정보 48열: analysis_set + notes 포함).

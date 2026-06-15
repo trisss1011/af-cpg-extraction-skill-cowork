@@ -1,6 +1,6 @@
 ---
 name: upgrade-skill
-version: 1.5
+version: 2.9.1
 updated: 2026-06-15
 description: >
   심방세동 한의CPG 데이터 추출 마스터 엑셀을 최신 cpg-data-extraction 사양으로 안전하게 업그레이드한다.
@@ -10,7 +10,7 @@ description: >
   v1.2 (2026-05-20): (1) v2.6.1 변경 명세 지원 추가 — KM vs WM 단독비교 제외 후보, S열 코드 5 케이스 세분화 재검토, T열 af_type_text 보강 후보, AN/AU FAS 정식 코드 + 보수적 판정, QOL(Minnesota cited) 명칭 갱신 후보. v2.6.1은 열 구조 변경 없음(48열 그대로), 의미·기재 규칙 보강만. (2) **8단계 인터랙티브 처치 모드** — 사람 확인 항목을 채팅창에서 카테고리별로 표시, 작업자 응답에 따라 마스터를 즉시 수정. 기존 `.md` 리포트는 병행 저장. 추출 6B 채팅 출력과 동일한 UX. (3) `_meta` 시트 키 명명 변경 — `schema_version` → `spec_version` ("열 구조"가 아니라 "적용된 사양"을 추적한다는 의미 명확화). 기존 마스터의 `schema_version` 키는 자동 마이그레이션 (값 복사 후 구 키 삭제).
   v1.3 (2026-06-01): v2.7·v2.8 변경 명세 지원 추가 (`references/v2.7_changes.md`, `references/v2.8_changes.md`). `LATEST_VERSION` 2.6.1 → 2.8 (v2.7 따라잡기 + v2.8 동시 반영). v2.8 자동도 `spec_version` 갱신뿐 — 양약 용량/종류차 제외(§1.AD-01, 2032 등)·무작위+순서배정 동시 시 non-RCT 재분류·다군 1쌍 재점검은 원문 대조가 필요해 8단계 사람 확인. v2.7은 열 구조 변경 없음(48열 유지) — 값·규칙 보강 + 소급 재분류. 자동 처리는 2건(`spec_version` 갱신 + `KM+WM_vs_KM` exclude 마킹)으로 한정(보수적 방침); 나머지(comorbidity 코드 2 제거·코드 7 노인[보류]·setting NR·Median/IQR·2처방 합침·개별화 처방·RFCA 재코딩)는 원문 대조가 필요해 8단계 인터랙티브 사람 확인. 마스터 셀만으로 100% 결정 가능한 항목만 자동 변경한다는 안전철학 유지.
   v1.4 (2026-06-08): v2.9 변경 명세 지원 추가 (`references/v2.9_changes.md`). `LATEST_VERSION` 2.8 → 2.9. 자동은 `spec_version` 갱신 + **TER 계열 importance 일괄 `Important`** + TER 코드 확정 매핑 정규화(`TCM syndrome TER`→`TER-TCM`, `TER-홀터`→`TER-Holter` 등 표기 통일)뿐. TER 기준(体表 心电图 vs 动态 Holter) 모호 행·냉동소작→comorbidity_code 8 부여(148 등)는 원문 대조가 필요해 8단계 사람 확인. v2.9는 열 구조 변경 없음(48열 유지).
-  v1.5 (2026-06-15): v2.9.1 변경 명세 지원 추가 (`references/v2.9.1_changes.md`). `LATEST_VERSION` 2.9 → 2.9.1. 자동은 `spec_version` 갱신 + **배제(exclude=Y) 논문의 아웃컴·한의중재_한약 행 소급 삭제**(기본정보 J열 exclude=Y인 번호의 두 시트 행 제거, 기본정보 행은 보존 — Decision Log §9.7). comorbidity_code 6 과거지표(CHADS2 등) 부여는 원문 점수 대조가 필요해 8단계 사람 확인. v2.9.1은 열 구조 변경 없음(48열 유지).
+  v2.9.1 (2026-06-15, 구 v1.5 — 배포 세트 버전 통일): v2.9.1 변경 명세 지원 추가 (`references/v2.9.1_changes.md`). `LATEST_VERSION` 2.9 → 2.9.1. 자동은 `spec_version` 갱신 + **배제(exclude=Y) 논문의 아웃컴·한의중재_한약 행 소급 삭제**(기본정보 J열 exclude=Y인 번호의 두 시트 행 제거, 기본정보 행은 보존 — Decision Log §9.7). comorbidity_code 6 과거지표(CHADS2 등) 부여는 원문 점수 대조가 필요해 8단계 사람 확인. v2.9.1은 열 구조 변경 없음(48열 유지). 본 스킬 자체 버전을 배포 세트(cpg-data-extraction·merge-skill)에 맞춰 `1.5`→`2.9.1`로 통일(lockstep). 과거 독립 버전 이력(v1.2~v1.4)은 아래에 보존.
   트리거: 업그레이드, 업그레이드 해줘, 마스터 업그레이드, upgrade, upgrade 실행, 마스터 retrofit, retrofit 실행, 소급 적용, 최신 버전으로 업그레이드, v2.6 업그레이드, v2.6.1 업그레이드, v2.7 업그레이드.
 ---
 
@@ -115,6 +115,8 @@ cpg-data-extraction의 신 버전이 나올 때마다 기존 마스터 엑셀을
 ## 5단계: 적용할 변경 목록 산출
 
 본 스킬이 지원하는 최신 버전을 `LATEST_VERSION` 상수로 보유 (현재 `2.9.1`).
+
+> **주의**: `LATEST_VERSION`은 본 스킬이 마스터를 끌어올리는 **cpg-data-extraction 사양(spec) 버전**이다. 본 스킬 자체의 frontmatter `version`(현재 lockstep으로 동일하게 `2.9.1`)과는 개념이 다르며, 우연히 같은 값일 뿐이다.
 
 - `current_version >= LATEST_VERSION`: 변경 없음 → 미리보기에 "이미 최신" 표시 후 정상 종료
 - `current_version < LATEST_VERSION`: 적용할 버전 목록을 순서대로 산출 (예: current=`2.5` & latest=`2.9.1` → `[2.6, 2.6.1, 2.7, 2.8, 2.9, 2.9.1]`)
