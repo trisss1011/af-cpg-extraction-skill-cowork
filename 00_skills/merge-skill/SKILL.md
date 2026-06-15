@@ -1,11 +1,12 @@
 ---
 name: merge-skill
-version: 2.7
-updated: 2026-06-01
+version: 2.7.1
+updated: 2026-06-15
 description: >
   심방세동 한의CPG 데이터 추출 작업에서 세션별로 분리 저장된 추출 파일들(`90_Output/extracts/AF_extract_<번호>_<study_id>.xlsx`)을 마스터 엑셀 `AF_CPG_data_extraction_심상송.xlsx`에 안전하게 병합한다.
   동시 세션 추출의 lost update(쓰기 손실) 경쟁 조건을 회피하기 위해 추출은 단독 파일로 분리하고, 병합은 단일 시점에 원자적으로 처리한다.
   v2.7 (2026-06-01): **study_id 중복을 두 경우로 구분** — 같은 study_id+같은 A열 번호는 동일 논문(overwrite 규칙 유지), 같은 base study_id+다른 번호는 서로 다른 논문으로 보고 **번호 오름차순으로 a/b/c 접미사 일괄 재부여**(Decision Log §9.5). 추출 단계의 임시 접미사는 머지 시 번호순으로 재계산되며, 3인 파일 최종 머지에서도 동일 규칙으로 통일된다. cpg-data-extraction v2.8과 페어링.
+  v2.7.1 (2026-06-15): **배제(exclude=Y) 논문 시트 처리** (Decision Log §9.7) — 추출 파일의 기본정보 `exclude=Y` 논문은 기본정보 행만 머지하고, 그 논문의 아웃컴·한의중재_한약 행은 머지에서 제외한다(배제 논문은 기본정보만 보존). cpg-data-extraction v2.9.1과 페어링.
   트리거: 머지, 병합, 추출 머지, 추출 병합, 마스터에 합쳐줘, 추출 파일 합쳐줘, AF_extract 합쳐줘,
   세션별 파일 합치기, 추출 결과 통합, merge extracts, consolidate extracts.
 ---
@@ -54,6 +55,7 @@ row 2 스타일 템플릿 추출 → 번호 오름차순으로 insert_rows + 값
 7. **번호 기반 정렬 삽입** (v1.1): 신규 행은 A열 `번호`(정수) 오름차순 위치에 삽입. 기존 행의 순서는 건드리지 않음. 같은 번호 내부(아웃컴)는 추출 당시 순서(stable) 유지.
 8. **서식 보존** (v2.5.1): 기존 행은 `insert_rows`의 자동 시프트로 셀 서식이 그대로 보존된다. 신규 행은 row 2의 셀 스타일을 col별 템플릿으로 복사하여 시각적 일관성을 확보한다. 데이터 영역에 대한 `delete_rows` + 재기입은 셀 서식을 잃으므로 금지.
 9. **study_id 번호순 a/b 재부여** (v2.7): 같은 base study_id(저자_연도)에 **서로 다른 번호**가 둘 이상 묶이면 서로 다른 논문이므로, 번호 오름차순으로 `a`/`b`/`c` 접미사를 부여한다. 식별 키는 **번호(A열)** — 같은 base+같은 번호는 동일 논문이다. 머지마다 base별로 접미사를 **번호순으로 재계산**하므로 기존 마스터 행의 접미사가 바뀔 수 있다(아직 추출 단계 + 3인 최종 머지에서 어차피 재통일되므로 허용). study_id는 세 시트(기본정보·아웃컴·한의중재_한약)에서 동일 번호 행을 일괄 갱신한다.
+10. **배제(exclude=Y) 논문 시트 제외** (v2.7.1): 추출 파일 `기본정보` 시트의 J열 `exclude=Y`인 논문은 **기본정보 행만 삽입**하고, 같은 번호의 아웃컴·한의중재_한약 행은 삽입하지 않는다. 배제 논문은 기본정보만 보존한다(Decision Log §9.7). 기본정보 행의 연분홍 서식은 추출 단계에서 부여되며 머지는 그대로 보존한다.
 
 ---
 
@@ -260,7 +262,11 @@ for s in SHEETS:
 # 6. sorted_extracts를 순서대로 시트에 직접 삽입 (ASCENDING)
 for extract in sorted_extracts:
     n = extract.번호
-    for s in ['기본정보', '아웃컴', '한의중재_한약']:
+    # v2.7.1: 배제 논문은 기본정보만 삽입 (아웃컴·한의중재_한약 시트 제외) — Decision Log §9.7
+    #   기본정보 J열(exclude)이 'Y'(대소문자 무시)면 excluded=True
+    excluded = str(extract.기본정보_exclude or '').strip().upper() == 'Y'
+    sheets = ['기본정보'] if excluded else ['기본정보', '아웃컴', '한의중재_한약']
+    for s in sheets:
         ws = wb_master[s]
         max_col = ws.max_column
         ext_rows = [list(r) for r in extract[s]]   # 헤더 제외, 빈 행 제거
@@ -300,7 +306,8 @@ for extract in sorted_extracts:
                 cell.protection    = copy(t["protection"])
 
 # 7. 행 수 검증
-#    expected = master_before + sum(extract 시트별 행 수) - overwrite_removed
+#    expected = master_before + sum(extract 시트별 삽입 행 수) - overwrite_removed
+#      (배제 논문은 기본정보 1행만 삽입 — 아웃컴·한의중재_한약 행 수는 expected에서 제외)
 #    actual   = 시트별 비-빈 데이터행 수
 #    불일치 시 save 중단, 백업 복구 안내
 
@@ -325,6 +332,8 @@ wb_master.save(MASTER)
 **기존이 비정렬인 경우**: linear scan 방식이라 "처음으로 번호가 커지는 위치"에 삽입된다. 기존 정렬이 깨져있어도 이 스킬은 기존 행을 재배치하지 않는다. 원칙 7 참조.
 
 **아웃컴 블록 삽입**: 한 논문의 여러 아웃컴 행은 추출 파일 내 원래 순서대로 마스터의 같은 위치에 통째로 들어간다(`insert_rows(target, n)` 한 번에 n행). 내부 순서를 가르는 추가 정렬은 수행하지 않는다.
+
+**배제 논문 처리 (v2.7.1)**: 추출 파일 기본정보 J열 `exclude=Y`이면 그 논문은 `기본정보` 시트에만 1행 삽입하고 `아웃컴`·`한의중재_한약` 시트에는 삽입하지 않는다(Decision Log §9.7). 따라서 행 수 검증의 expected에도 배제 논문의 아웃컴·한약 행 수는 더하지 않는다. 추출 파일 자체는 그대로 `merged/`로 이관(아웃컴·한약 데이터 원본 보존).
 
 ## 10단계: 사후 검증
 
@@ -435,6 +444,11 @@ Overwrite 대상:
 ---
 
 ## 변경 이력
+
+### v2.7.1 (2026-06-15)
+- **배제(exclude=Y) 논문 시트 제외 신설** (Decision Log §9.7, cpg-data-extraction v2.9.1 페어링): 추출 파일 기본정보 J열 `exclude=Y`인 논문은 기본정보 행만 머지하고, 같은 번호의 아웃컴·한의중재_한약 행은 머지에서 제외한다(배제 논문은 기본정보만 보존). 기존엔 배제 논문도 세 시트 모두 머지되던 동작을 교정.
+- 핵심 원칙 10 추가. 9단계 삽입 루프에 `excluded` 판정 + 시트 목록 분기 추가, 행 수 검증 expected에서 배제 논문의 아웃컴·한약 행 제외.
+- 추출 파일 원본은 그대로 `merged/`로 이관(아웃컴·한약 데이터 보존). 기존 마스터의 배제 논문 두 시트 소급 삭제는 upgrade-skill v1.5(`v2.9.1_changes.md`) 담당.
 
 ### v2.7 (2026-06-01)
 - **study_id 번호순 a/b 재부여 신설** (Decision Log §9.5, cpg-data-extraction v2.8 페어링): 같은 base study_id에 서로 다른 번호가 둘 이상이면 서로 다른 논문으로 보고 번호 오름차순 `a`/`b`/`c` 부여.
